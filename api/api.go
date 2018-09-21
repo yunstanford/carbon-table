@@ -3,12 +3,15 @@ package api
 
 import (
     "github.com/gin-gonic/gin"
+    "github.com/yunstanford/carbon-table/cfg"
+    "github.com/yunstanford/carbon-table/table"
 )
 
 
 type Api struct {
     addr   string
     router *gin.Engine
+    table  *table.Table
 }
 
 
@@ -25,4 +28,9 @@ func AddRoutes(r *gin.Engine) {
             "message": "pong",
         })
     })
+}
+
+// NewApi
+func NewApi(config *cfg.apiConfig) *Api{
+    
 }

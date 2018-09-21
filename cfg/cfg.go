@@ -4,9 +4,9 @@ import (
     "github.com/BurntSushi/toml"
 )
 
-// common Config
+// Table Config
 // ttl: Number of seconds to rebuild trie according to current traffic. This is designed for dropping pretty old metrics.
-type commonConfig struct {
+type tableConfig struct {
     Ttl  int
 }
 
@@ -18,14 +18,14 @@ type apiConfig struct {
 
 // tcp Config
 // addr: Tcp Listen Addr
-type tcpConfig struct {
+type receiverConfig struct {
     TcpAddr  string
 }
 
 type Config struct {
-    Common   commonConfig
-    Api      apiConfig
-    Tcp      tcpConfig
+    Table      tableConfig
+    Api        apiConfig
+    Receiver   receiverConfig
     // Put any other configs here...
 }
 
@@ -33,13 +33,13 @@ type Config struct {
 // Provdes default Values
 func NewConfig() *Config {
     cfg := &Config{
-        Common: commonConfig{
+        Table: tableConfig{
             Ttl: 3600 * 12, // 12 hours
         },
         Api: apiConfig{
             ApiAddr: "127.0.0.1:8080",
         },
-        Tcp: tcpConfig{
+        Receiver: receiverConfig{
             TcpAddr: ":3000"
         }
     }

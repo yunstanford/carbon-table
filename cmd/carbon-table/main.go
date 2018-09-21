@@ -32,5 +32,10 @@ func main() {
         return
     }
 
-    
+    // New Table
+
+    // Start API
+
+    // Start Receiver
+
 }

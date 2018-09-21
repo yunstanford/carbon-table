@@ -1,20 +1,18 @@
 package table
 
 import (
-	"time"
-	"github.com/yunstanford/carbon-table/api"
-	"github.com/yunstanford/carbon-table/trie"
+    "github.com/yunstanford/carbon-table/cfg"
+    "github.com/yunstanford/carbon-table/trie"
 )
 
 
 // Table
 type Table struct {
-    index  		 *trie.Node
-    tableConfig  *TableConfig
-    apiHandler	 *api.Api
+    index   *trie.Node
+    ttl     int
 }
 
 // NewTable
-func NewTable() *Table {
+func NewTable(config *cfg.tableConfig) *Table {
 
 }
