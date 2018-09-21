@@ -1,9 +1,9 @@
 package table
 
 import (
+	"time"
 	"github.com/yunstanford/carbon-table/api"
 	"github.com/yunstanford/carbon-table/trie"
-	"time"
 )
 
 
@@ -14,3 +14,7 @@ type Table struct {
     apiHandler	 *api.Api
 }
 
+// NewTable
+func NewTable() *Table {
+
+}

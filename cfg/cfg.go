@@ -1,5 +1,8 @@
 package cfg
 
+import (
+    "github.com/BurntSushi/toml"
+)
 
 // common Config
 // ttl: Number of seconds to rebuild trie according to current traffic. This is designed for dropping pretty old metrics.
@@ -19,14 +22,12 @@ type tcpConfig struct {
     TcpAddr  string
 }
 
-
 type Config struct {
     Common   commonConfig
     Api      apiConfig
     Tcp      tcpConfig
     // Put any other configs here...
 }
-
 
 // NewConfig
 // Provdes default Values
