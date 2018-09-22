@@ -1,12 +1,10 @@
 package api
 
-
 import (
     "github.com/gin-gonic/gin"
     "github.com/yunstanford/carbon-table/cfg"
     "github.com/yunstanford/carbon-table/table"
 )
-
 
 type Api struct {
     addr   string
@@ -15,22 +13,52 @@ type Api struct {
 }
 
 
-func (a *Api) Start() {
-    a.router.Run(a.addr)
-}
+// Handlers
+///////////
 
-
-// Add routes for Api
-func AddRoutes(r *gin.Engine) {
-    // health check ping
-    r.GET("/ping", func(c *gin.Context) {
+// health check handler
+func AddHealthPing(a *Api) {
+    a.router.GET("/ping", func(c *gin.Context) {
         c.JSON(200, gin.H{
             "message": "pong",
         })
     })
 }
 
+// metric expand query handler
+func AddExpandQuery(a *Api) {
+    // trie expand
+    a.table
+
+    a.router.GET("/metric/:query/", func(c *gin.Context) {
+        c.JSON(200, gin.H{
+            "message": "pong",
+        })
+    })
+}
+
+
+// Add routes for Api
+func AddRoutes(a *Api) {
+    AddHealthPing(a)
+    AddExpandQuery(a)
+
+    // Add more routes here...
+}
+
+// Start
+func (a *Api) Start() {
+    a.router.Run(a.addr)
+}
+
 // NewApi
-func NewApi(config *cfg.apiConfig) *Api{
-    
+func NewApi(c *cfg.apiConfig, t *table.Table) *Api{
+    a = &Api {
+        addr:   c.ApiAddr,
+        router: gin.Default(),
+        table:  t,
+    }
+    // add routes
+    AddRoutes(a)
+    return a
 }
