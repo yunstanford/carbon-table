@@ -78,9 +78,15 @@ func acceptTcpConn(c net.Conn, handler Handler) {
     handler.Handle(c)
 }
 
-func NewReceiver(config *cfg.receiverConfig) {
+// NewReceiver
+func NewReceiver(c *cfg.receiverConfig, t *table.Table) *Receiver{
     // New Receiver
+    rec = &Receiver {
+        tcpAddr: c.TcpAddr,
+        table:   t,
+    }
 
     // Listen
-
+    listen(r.tcpAddr , r.Handle)
+    return rec
 }
