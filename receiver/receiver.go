@@ -37,6 +37,7 @@ func (r *Receiver) Handle(c io.Reader) {
         // log.Debug("receiver.go: Received Line: %q", buf)
 
         // Insert Into Table
+        r.table.Insert(key)
 
     }
     if err := scanner.Err(); err != nil {

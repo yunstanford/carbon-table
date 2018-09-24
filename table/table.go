@@ -23,3 +23,18 @@ func NewTable(config *cfg.tableConfig) *Table {
         ttl:   config.Ttl,
     }
 }
+
+// Insert
+func (t *Table) Insert(metric string) {
+    t.index.Insert(metric)
+}
+
+// ExpandQuery
+func (t *Table) ExpandQuery(query string) []string {
+    return t.index.ExpandQuery(query)
+}
+
+// ExpandPattern
+func (t *Table) ExpandPattern(pattern string) []string {
+    return t.index.ExpandPattern(pattern)
+}
