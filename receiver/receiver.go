@@ -26,15 +26,15 @@ func (r *Receiver) Handle(c io.Reader) {
 
         buf := scanner.Bytes()
 
-        key, val, ts, err := m20.ValidatePacket(buf, p.config.Validation_level_legacy.Level, p.config.Validation_level_m20.Level)
+        // We're using medium validation, for now.
+        // TODO: Make validation level
+        key, val, ts, err := m20.ValidatePacket(buf, m20.MediumLegacy, m20.MediumM20)
         if err != nil {
-            log.Debug("plain.go: Bad Line: %q", buf)
-            p.bad.Add(key, buf, err)
-            numInvalid.Inc(1)
+            // log.Debug("receiver.go: Bad Line: %q", buf)
             continue
         }
 
-        // log.Debug("plain.go: Received Line: %q", buf)
+        // log.Debug("receiver.go: Received Line: %q", buf)
 
         // Insert Into Table
 
@@ -88,5 +88,6 @@ func NewReceiver(c *cfg.receiverConfig, t *table.Table) *Receiver{
 
     // Listen
     listen(r.tcpAddr , r.Handle)
+
     return rec
 }

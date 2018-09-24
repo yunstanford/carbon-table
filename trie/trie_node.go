@@ -19,6 +19,13 @@ type Node struct {
     children  map[string]*Node
 }
 
+// QueryResult, a tuple of query results, (query, isLeaf)
+// e.g. {foo,bar}baz.carbon.cache = [(foobaz.carbon.cache, True), (barbaz.carbon.cache, True)]
+type QueryResult struct {
+    query  string
+    isLeaf bool
+}
+
 
 // NewNode
 func NewNode(isLeaf bool, name string, sep rune) *Node {
@@ -151,6 +158,11 @@ func (n *Node) ExpandQuery(query string) []string{
         }
     }
     return queries
+}
+
+// ExpandPattern - expand a wildcard pattern
+func (n *Node) ExpandQuery(query string) []QueryResult{
+
 }
 
 // Count - return children count

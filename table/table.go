@@ -6,7 +6,7 @@ import (
 )
 
 const (
-    INDEX_ROOT_NAME = "ROOT"
+    INDEX_NAME = "carbon-table"
 )
 
 // Table
@@ -17,7 +17,7 @@ type Table struct {
 
 // NewTable
 func NewTable(config *cfg.tableConfig) *Table {
-    root = trie.NewNode(false, INDEX_ROOT_NAME, '.')
+    root = trie.NewTrieIndex(INDEX_NAME, '.')
     return &Table {
         index: root,
         ttl:   config.Ttl,
