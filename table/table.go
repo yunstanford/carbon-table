@@ -35,6 +35,6 @@ func (t *Table) ExpandQuery(query string) []string {
 }
 
 // ExpandPattern
-func (t *Table) ExpandPattern(pattern string) []string {
+func (t *Table) ExpandPattern(pattern string) []*trie.QueryResult {
     return t.index.ExpandPattern(pattern)
 }

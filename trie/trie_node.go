@@ -170,22 +170,22 @@ func (n *Node) ExpandQuery(query string) []string{
 
 // ExpandPattern - expand a wildcard pattern
 func (n *Node) ExpandPattern(pattern string) []*QueryResult{
-    var queryResults []string
-    sepIndex := strings.IndexRune(query, n.sep)
+    var queryResults []*QueryResult
+    sepIndex := strings.IndexRune(pattern, n.sep)
 
     if sepIndex < 0 {
-        for _, node := range n.GetAllNode(query) {
+        for _, node := range n.GetAllNode(pattern) {
             queryResults = append(queryResults, NewQueryResult(node.name, node.isLeaf))
             if node.isLeaf && node.Count() != 0 {
                 queryResults = append(queryResults, NewQueryResult(node.name, false))
             }
         }
     } else {
-        curPart := query[:sepIndex]
+        curPart := pattern[:sepIndex]
         curMatches := n.GetAllNode(curPart)
-        subQuery := query[sepIndex + 1:]
+        subQuery := pattern[sepIndex + 1:]
         for _, m := range curMatches {
-            subQueries := m.ExpandQuery(subQuery)
+            subQueries := m.ExpandPattern(subQuery)
             for _, sq := range subQueries {
                 var buffer bytes.Buffer
                 buffer.WriteString(m.name)

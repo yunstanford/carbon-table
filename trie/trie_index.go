@@ -18,7 +18,7 @@ type TrieIndex struct {
 
 // NewTrieIndex
 func NewTrieIndex(name string, sep rune) *TrieIndex {
-    root = NewNode(false, INDEX_ROOT_NAME, '.')
+    root := NewNode(false, INDEX_ROOT_NAME, '.')
     return &TrieIndex{
         name: name,
         sep: sep,
@@ -29,7 +29,7 @@ func NewTrieIndex(name string, sep rune) *TrieIndex {
 // Insert
 func (trieIndex *TrieIndex) Insert(metric string) {
     // split
-    metricParts = strings.Split(metric, string(trieIndex.sep))
+    metricParts := strings.Split(metric, string(trieIndex.sep))
 
     // insert recursively
     insert(trieIndex.root, metricParts)
@@ -41,7 +41,7 @@ func (trieIndex *TrieIndex) ExpandQuery(query string) []string {
 }
 
 // ExpandPattern
-func (trieIndex *TrieIndex) ExpandPattern(pattern string) []string {
+func (trieIndex *TrieIndex) ExpandPattern(pattern string) []*QueryResult {
     return trieIndex.root.ExpandPattern(pattern)
 }
 
