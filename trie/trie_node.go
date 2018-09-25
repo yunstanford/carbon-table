@@ -27,6 +27,14 @@ type QueryResult struct {
 }
 
 
+// NewQueryResult
+func NewQueryResult(query string, isLeaf bool) *QueryResult {
+    return &QueryResult {
+        query:  query,
+        isLeaf: isLeaf,
+    }
+}
+
 // NewNode
 func NewNode(isLeaf bool, name string, sep rune) *Node {
     return &Node{
@@ -161,8 +169,33 @@ func (n *Node) ExpandQuery(query string) []string{
 }
 
 // ExpandPattern - expand a wildcard pattern
-func (n *Node) ExpandQuery(query string) []QueryResult{
+func (n *Node) ExpandPattern(pattern string) []*QueryResult{
+    var queryResults []string
+    sepIndex := strings.IndexRune(query, n.sep)
 
+    if sepIndex < 0 {
+        for _, node := range n.GetAllNode(query) {
+            queryResults = append(queryResults, NewQueryResult(node.name, node.isLeaf))
+            if node.isLeaf && node.Count() != 0 {
+                queryResults = append(queryResults, NewQueryResult(node.name, false))
+            }
+        }
+    } else {
+        curPart := query[:sepIndex]
+        curMatches := n.GetAllNode(curPart)
+        subQuery := query[sepIndex + 1:]
+        for _, m := range curMatches {
+            subQueries := m.ExpandQuery(subQuery)
+            for _, sq := range subQueries {
+                var buffer bytes.Buffer
+                buffer.WriteString(m.name)
+                buffer.WriteRune(n.sep)
+                buffer.WriteString(sq.query)
+                queryResults = append(queryResults, NewQueryResult(buffer.String(), sq.isLeaf))
+            }
+        }
+    }
+    return queryResults
 }
 
 // Count - return children count
