@@ -28,7 +28,7 @@ func AddHealthPing(a *Api) {
 // metric expand query handler
 func AddExpandQuery(a *Api) {
     // trie expand
-    a.table
+    queryResults := a.table.ExpandQuery("blablabla")
 
     a.router.GET("/metric/:query/", func(c *gin.Context) {
         c.JSON(200, gin.H{
@@ -52,8 +52,8 @@ func (a *Api) Start() {
 }
 
 // NewApi
-func NewApi(c *cfg.apiConfig, t *table.Table) *Api{
-    a = &Api {
+func NewApi(c *cfg.ApiConfig, t *table.Table) *Api{
+    a := &Api {
         addr:   c.ApiAddr,
         router: gin.Default(),
         table:  t,

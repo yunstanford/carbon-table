@@ -11,13 +11,13 @@ const (
 
 // Table
 type Table struct {
-    index   *trie.Node
+    index   *trie.TrieIndex
     ttl     int
 }
 
 // NewTable
-func NewTable(config *cfg.tableConfig) *Table {
-    root = trie.NewTrieIndex(INDEX_NAME, '.')
+func NewTable(config *cfg.TableConfig) *Table {
+    root := trie.NewTrieIndex(INDEX_NAME, '.')
     return &Table {
         index: root,
         ttl:   config.Ttl,

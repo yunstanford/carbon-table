@@ -1,31 +1,32 @@
 package cfg
 
 import (
+    "io/ioutil"
     "github.com/BurntSushi/toml"
 )
 
 // Table Config
 // ttl: Number of seconds to rebuild trie according to current traffic. This is designed for dropping pretty old metrics.
-type tableConfig struct {
+type TableConfig struct {
     Ttl  int
 }
 
 // api Config
 // addr: Http Query Addr
-type apiConfig struct {
+type ApiConfig struct {
     ApiAddr  string
 }
 
 // tcp Config
 // addr: Tcp Listen Addr
-type receiverConfig struct {
+type ReceiverConfig struct {
     TcpAddr  string
 }
 
 type Config struct {
-    Table      tableConfig
-    Api        apiConfig
-    Receiver   receiverConfig
+    Table      TableConfig
+    Api        ApiConfig
+    Receiver   ReceiverConfig
     // Put any other configs here...
 }
 
@@ -33,15 +34,15 @@ type Config struct {
 // Provdes default Values
 func NewConfig() *Config {
     cfg := &Config{
-        Table: tableConfig{
+        Table: TableConfig{
             Ttl: 3600 * 12, // 12 hours
         },
-        Api: apiConfig{
+        Api: ApiConfig{
             ApiAddr: "127.0.0.1:8080",
         },
-        Receiver: receiverConfig{
-            TcpAddr: ":3000"
-        }
+        Receiver: ReceiverConfig{
+            TcpAddr: ":3000",
+        },
     }
     return cfg
 }

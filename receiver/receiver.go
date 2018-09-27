@@ -15,6 +15,10 @@ type Receiver struct {
     // Add more configs
 }
 
+type Handler interface {
+    Handle(io.Reader)
+}
+
 // Receiver Handle
 func (r *Receiver) Handle(c io.Reader) {
     scanner := bufio.NewScanner(c)
@@ -28,7 +32,7 @@ func (r *Receiver) Handle(c io.Reader) {
 
         // We're using medium validation, for now.
         // TODO: Make validation level
-        key, val, ts, err := m20.ValidatePacket(buf, m20.MediumLegacy, m20.MediumM20)
+        key, _, _, err := m20.ValidatePacket(buf, m20.MediumLegacy, m20.MediumM20)
         if err != nil {
             // log.Debug("receiver.go: Bad Line: %q", buf)
             continue
@@ -37,7 +41,7 @@ func (r *Receiver) Handle(c io.Reader) {
         // log.Debug("receiver.go: Received Line: %q", buf)
 
         // Insert Into Table
-        r.table.Insert(key)
+        r.table.Insert(string(key))
 
     }
     if err := scanner.Err(); err != nil {
@@ -80,15 +84,15 @@ func acceptTcpConn(c net.Conn, handler Handler) {
 }
 
 // NewReceiver
-func NewReceiver(c *cfg.receiverConfig, t *table.Table) *Receiver{
+func NewReceiver(c *cfg.ReceiverConfig, t *table.Table) *Receiver{
     // New Receiver
-    rec = &Receiver {
+    rec := &Receiver {
         tcpAddr: c.TcpAddr,
         table:   t,
     }
 
     // Listen
-    listen(r.tcpAddr , r.Handle)
+    listen(rec.tcpAddr , rec)
 
     return rec
 }
