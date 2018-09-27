@@ -201,3 +201,109 @@ func TestNodeExpandQuery(t *testing.T) {
         }
     }
 }
+
+// Testing node ExpandQuery works
+func TestNodeExpandPattern(t *testing.T) {
+    // Setup
+    var root *Node
+    var zillow *Node
+    var seattle, sf1, sf2, nyc *Node
+    var rentalsConsumer, rentalsRevenue, velocity, velocityOne, velocityTwo, pa, data *Node
+
+    root = NewNode(false, "root", '.')
+    zillow = NewNode(false, "zillow", '.')
+    seattle = NewNode(false, "seattle", '.')
+    sf1 = NewNode(false, "sf1", '.')
+    sf2 = NewNode(false, "sf2", '.')
+    nyc = NewNode(false, "nyc", '.')
+    rentalsConsumer = NewNode(true, "rentalsConsumer", '.')
+    rentalsRevenue = NewNode(true, "rentalsRevenue", '.')
+    velocity = NewNode(true, "velocity", '.')
+    velocityOne = NewNode(true, "velo1city", '.')
+    velocityTwo = NewNode(true, "velo2city", '.')
+    pa = NewNode(true, "pa", '.')
+    data = NewNode(true, "data", '.')
+
+    seattle.Insert(velocity)
+    seattle.Insert(velocityOne)
+    seattle.Insert(velocityTwo)
+    seattle.Insert(rentalsRevenue)
+    seattle.Insert(rentalsConsumer)
+    seattle.Insert(pa)
+    seattle.Insert(data)
+    sf1.Insert(pa)
+    sf1.Insert(data)
+    sf2.Insert(pa)
+    sf2.Insert(data)
+    nyc.Insert(rentalsConsumer)
+    nyc.Insert(rentalsRevenue)
+    nyc.Insert(data)
+    zillow.Insert(seattle)
+    zillow.Insert(sf1)
+    zillow.Insert(sf2)
+    zillow.Insert(nyc)
+    root.Insert(zillow)
+
+    // ExpandPattern
+    testCases := []struct {
+        pattern string
+        expectedQueries []*QueryResult
+    }{
+        {
+            "zillow.seattle.velocity",
+            []*QueryResult{
+                &QueryResult{query: "zillow.seattle.velocity", isLeaf: true},
+            },
+        },
+        {
+            "zillow.sf1.*",
+            []*QueryResult{
+                &QueryResult{query: "zillow.sf1.data", isLeaf: true},
+                &QueryResult{query: "zillow.sf1.pa", isLeaf: true},
+            },
+        },
+        {
+            "zillow.*.data",
+            []*QueryResult{
+                &QueryResult{query: "zillow.nyc.data", isLeaf: true},
+                &QueryResult{query: "zillow.seattle.data", isLeaf: true},
+                &QueryResult{query: "zillow.sf1.data", isLeaf: true},
+                &QueryResult{query: "zillow.sf2.data", isLeaf: true},
+            },
+        },
+        {
+            "zillow.sf[0-9].data",
+            []*QueryResult{
+                &QueryResult{query: "zillow.sf1.data", isLeaf: true},
+                &QueryResult{query: "zillow.sf2.data", isLeaf: true},
+            },
+        },
+        {
+            "zillow.seattle.velo[1-9]city",
+            []*QueryResult{
+                &QueryResult{query: "zillow.seattle.velo1city", isLeaf: true},
+                &QueryResult{query: "zillow.seattle.velo2city", isLeaf: true},
+            },
+        },
+        {
+            "zillow.*.rentals{Revenue,Consumer}",
+            []*QueryResult{
+                &QueryResult{query: "zillow.nyc.rentalsConsumer", isLeaf: true},
+                &QueryResult{query: "zillow.nyc.rentalsRevenue", isLeaf: true},
+                &QueryResult{query: "zillow.seattle.rentalsConsumer", isLeaf: true},
+                &QueryResult{query: "zillow.seattle.rentalsRevenue", isLeaf: true},
+            },
+        },
+    }
+
+    // Verify
+    for _, testCase := range testCases {
+        queryResults := root.ExpandPattern(testCase.pattern)
+        sort.Slice(queryResults, func(i, j int) bool {
+          return queryResults[i].query < queryResults[j].query
+        })
+        if !reflect.DeepEqual(queryResults, testCase.expectedQueries) {
+            t.Errorf("failed with pattern %s", testCase.pattern)
+        }
+    }
+}
