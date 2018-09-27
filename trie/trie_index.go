@@ -54,7 +54,7 @@ func insert(parent *Node, metricParts []string) {
         parent.Insert(NewNode(true, metricParts[0], parent.sep))
         return
     }
-    if parent.Get(metricParts[0]) != nil {
+    if parent.Get(metricParts[0]) == nil {
         parent.Insert(NewNode(false, metricParts[0], parent.sep))
     }
     insert(parent.Get(metricParts[0]), metricParts[1:])
