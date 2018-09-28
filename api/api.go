@@ -27,7 +27,7 @@ func AddHealthPing(a *Api) {
 
 // metric expand query handler
 func AddExpandQuery(a *Api) {
-    a.router.GET("/metric/:query/", func(c *gin.Context) {
+    a.router.GET("/metric/query/:query/", func(c *gin.Context) {
         query := c.Param("query")
         // trie expand
         queryResults := a.table.ExpandQuery(query)
@@ -35,11 +35,21 @@ func AddExpandQuery(a *Api) {
     })
 }
 
+// metric expand query handler
+func AddExpandPattern(a *Api) {
+    a.router.GET("/metric/pattern/:pattern/", func(c *gin.Context) {
+        pattern := c.Param("pattern")
+        // trie expand
+        queryResults := a.table.ExpandPattern(pattern)
+        c.JSON(200, queryResults)
+    })
+}
 
 // Add routes for Api
 func AddRoutes(a *Api) {
     AddHealthPing(a)
     AddExpandQuery(a)
+    AddExpandPattern(a)
 
     // Add more routes here...
 }
