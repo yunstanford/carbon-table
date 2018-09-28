@@ -4,7 +4,7 @@ import (
     "flag"
     "fmt"
     "os"
-    // "go.uber.org/zap"
+    "go.uber.org/zap"
     "github.com/yunstanford/carbon-table/table"
     "github.com/yunstanford/carbon-table/api"
     "github.com/yunstanford/carbon-table/cfg"
@@ -34,14 +34,21 @@ func main() {
         return
     }
 
+    // Logger
+    logger, _ := zap.NewProduction()
+    defer logger.Sync() // flushes buffer, if any
+    logger.Info("Starting carbon-table")
+
     // New Table
     tbl := table.NewTable(config.Table)
 
     // New Receiver
-    rec := receiver.NewReceiver(config.Receiver, tbl)
+    logger.Info("Starting Receiver")
+    rec := receiver.NewReceiver(config.Receiver, tbl, logger)
     receiver.Listen(rec.TcpAddr , rec)
 
     // New API
+    logger.Info("Starting Web API")
     webApi := api.NewApi(config.Api, tbl)
     webApi.Start()
 }

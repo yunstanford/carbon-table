@@ -27,10 +27,10 @@ func AddHealthPing(a *Api) {
 
 // metric expand query handler
 func AddExpandQuery(a *Api) {
-    // trie expand
-    queryResults := a.table.ExpandQuery("blablabla")
-
     a.router.GET("/metric/:query/", func(c *gin.Context) {
+        query := c.Param("query")
+        // trie expand
+        queryResults := a.table.ExpandQuery(query)
         c.JSON(200, queryResults)
     })
 }

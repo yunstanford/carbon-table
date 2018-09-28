@@ -4,6 +4,7 @@ import (
     "bufio"
     "io"
     "net"
+    "go.uber.org/zap"
     "github.com/yunstanford/carbon-table/cfg"
     "github.com/yunstanford/carbon-table/table"
     m20 "github.com/metrics20/go-metrics20/carbon20"
@@ -11,8 +12,9 @@ import (
 
 type Receiver struct {
     TcpAddr   string
-    table  *table.Table
+    table     *table.Table
     // Add more configs
+    Logger    *zap.Logger
 }
 
 type Handler interface {
@@ -34,11 +36,11 @@ func (r *Receiver) Handle(c io.Reader) {
         // TODO: Make validation level
         key, _, _, err := m20.ValidatePacket(buf, m20.MediumLegacy, m20.MediumM20)
         if err != nil {
-            // log.Debug("receiver.go: Bad Line: %q", buf)
+            r.Logger.Debug("receiver.go: Bad Line", zap.String("line", string(buf)))
             continue
         }
 
-        // log.Debug("receiver.go: Received Line: %q", buf)
+        r.Logger.Debug("receiver.go: Received Line", zap.String("line", string(buf)))
 
         // Insert Into Table
         r.table.Insert(string(key))
@@ -84,11 +86,12 @@ func acceptTcpConn(c net.Conn, handler Handler) {
 }
 
 // NewReceiver
-func NewReceiver(c *cfg.ReceiverConfig, t *table.Table) *Receiver{
+func NewReceiver(c *cfg.ReceiverConfig, t *table.Table, l *zap.Logger) *Receiver{
     // New Receiver
     rec := &Receiver {
         TcpAddr: c.TcpAddr,
         table:   t,
+        Logger:  l,
     }
 
     return rec
