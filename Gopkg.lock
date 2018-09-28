@@ -14,7 +14,6 @@
   revision = "22d885f9ecc78bf4ee5d72b937e4bbcdc58e8cae"
 
 [[projects]]
-  branch = "master"
   name = "github.com/gin-contrib/zap"
   packages = ["."]
   revision = "a4f331736217f34737505ce743f9d41efb41e0ab"
@@ -44,7 +43,6 @@
   version = "v0.0.4"
 
 [[projects]]
-  branch = "master"
   name = "github.com/metrics20/go-metrics20"
   packages = ["carbon20"]
   revision = "717ed3a27bf9f8d2469e7ea5b36037a4793eee44"
@@ -106,6 +104,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "33338432e96b474f4fce5910d1d95c3eaaadbff87c4b6dd5911ea26f997f1785"
+  inputs-digest = "84055f7a57f7531d32490e75ef34b78ef4b3762c63710771aa26337302dceb80"
   solver-name = "gps-cdcl"
   solver-version = 1
