@@ -49,6 +49,6 @@ func main() {
 
     // New API
     logger.Info("Starting Web API")
-    webApi := api.NewApi(config.Api, tbl)
+    webApi := api.NewApi(config.Api, tbl, logger)
     webApi.Start()
 }

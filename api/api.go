@@ -1,7 +1,10 @@
 package api
 
 import (
+    "time"
     "github.com/gin-gonic/gin"
+    "go.uber.org/zap"
+    "github.com/gin-contrib/zap"
     "github.com/yunstanford/carbon-table/cfg"
     "github.com/yunstanford/carbon-table/table"
 )
@@ -10,6 +13,7 @@ type Api struct {
     addr   string
     router *gin.Engine
     table  *table.Table
+    Logger *zap.Logger
 }
 
 
@@ -60,12 +64,20 @@ func (a *Api) Start() {
 }
 
 // NewApi
-func NewApi(c *cfg.ApiConfig, t *table.Table) *Api{
+func NewApi(c *cfg.ApiConfig, t *table.Table, l *zap.Logger) *Api{
+    // router
+    gin.SetMode(gin.ReleaseMode)
+    router := gin.New()
+    router.Use(ginzap.Ginzap(l, time.RFC3339, true), gin.Recovery())
+
+    // API
     a := &Api {
         addr:   c.ApiAddr,
-        router: gin.Default(),
+        router: router,
         table:  t,
+        Logger: l,
     }
+
     // add routes
     AddRoutes(a)
     return a
