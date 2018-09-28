@@ -37,6 +37,7 @@ func main() {
     // Logger
     logger, _ := zap.NewProduction()
     defer logger.Sync() // flushes buffer, if any
+
     logger.Info("Starting carbon-table")
 
     // New Table
