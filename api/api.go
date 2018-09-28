@@ -31,9 +31,7 @@ func AddExpandQuery(a *Api) {
     queryResults := a.table.ExpandQuery("blablabla")
 
     a.router.GET("/metric/:query/", func(c *gin.Context) {
-        c.JSON(200, gin.H{
-            "message": "pong",
-        })
+        c.JSON(200, queryResults)
     })
 }
 

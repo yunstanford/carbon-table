@@ -10,7 +10,7 @@ import (
 )
 
 type Receiver struct {
-    tcpAddr   string
+    TcpAddr   string
     table  *table.Table
     // Add more configs
 }
@@ -50,7 +50,7 @@ func (r *Receiver) Handle(c io.Reader) {
 }
 
 // listen
-func listen(addr string, handler Handler) error {
+func Listen(addr string, handler Handler) error {
     laddr, err := net.ResolveTCPAddr("tcp", addr)
     if err != nil {
         return err
@@ -87,12 +87,9 @@ func acceptTcpConn(c net.Conn, handler Handler) {
 func NewReceiver(c *cfg.ReceiverConfig, t *table.Table) *Receiver{
     // New Receiver
     rec := &Receiver {
-        tcpAddr: c.TcpAddr,
+        TcpAddr: c.TcpAddr,
         table:   t,
     }
-
-    // Listen
-    listen(rec.tcpAddr , rec)
 
     return rec
 }

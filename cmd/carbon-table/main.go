@@ -3,10 +3,12 @@ package main
 import (
     "flag"
     "fmt"
-    "go.uber.org/zap"
+    "os"
+    // "go.uber.org/zap"
     "github.com/yunstanford/carbon-table/table"
     "github.com/yunstanford/carbon-table/api"
     "github.com/yunstanford/carbon-table/cfg"
+    "github.com/yunstanford/carbon-table/receiver"
 )
 
 func init() {
@@ -26,16 +28,20 @@ func main() {
     flag.Parse()
 
     // Parse Config File...
-    cfg, err := cfg.ParseConfigFile(*configFile)
+    config, err := cfg.ParseConfigFile(*configFile)
     if err != nil {
         usage()
         return
     }
 
     // New Table
+    tbl := table.NewTable(config.Table)
 
-    // Start API
+    // New Receiver
+    rec := receiver.NewReceiver(config.Receiver, tbl)
+    receiver.Listen(rec.TcpAddr , rec)
 
-    // Start Receiver
-
+    // New API
+    webApi := api.NewApi(config.Api, tbl)
+    webApi.Start()
 }

@@ -24,9 +24,9 @@ type ReceiverConfig struct {
 }
 
 type Config struct {
-    Table      TableConfig
-    Api        ApiConfig
-    Receiver   ReceiverConfig
+    Table      *TableConfig
+    Api        *ApiConfig
+    Receiver   *ReceiverConfig
     // Put any other configs here...
 }
 
@@ -34,13 +34,13 @@ type Config struct {
 // Provdes default Values
 func NewConfig() *Config {
     cfg := &Config{
-        Table: TableConfig{
+        Table: &TableConfig{
             Ttl: 3600 * 12, // 12 hours
         },
-        Api: ApiConfig{
+        Api: &ApiConfig{
             ApiAddr: "127.0.0.1:8080",
         },
-        Receiver: ReceiverConfig{
+        Receiver: &ReceiverConfig{
             TcpAddr: ":3000",
         },
     }
