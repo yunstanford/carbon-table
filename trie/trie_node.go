@@ -22,16 +22,16 @@ type Node struct {
 // QueryResult, a tuple of query results, (query, isLeaf)
 // e.g. {foo,bar}baz.carbon.cache = [(foobaz.carbon.cache, True), (barbaz.carbon.cache, True)]
 type QueryResult struct {
-    query  string
-    isLeaf bool
+    Query  string
+    IsLeaf bool
 }
 
 
 // NewQueryResult
 func NewQueryResult(query string, isLeaf bool) *QueryResult {
     return &QueryResult {
-        query:  query,
-        isLeaf: isLeaf,
+        Query:  query,
+        IsLeaf: isLeaf,
     }
 }
 
@@ -190,8 +190,8 @@ func (n *Node) ExpandPattern(pattern string) []*QueryResult{
                 var buffer bytes.Buffer
                 buffer.WriteString(m.name)
                 buffer.WriteRune(n.sep)
-                buffer.WriteString(sq.query)
-                queryResults = append(queryResults, NewQueryResult(buffer.String(), sq.isLeaf))
+                buffer.WriteString(sq.Query)
+                queryResults = append(queryResults, NewQueryResult(buffer.String(), sq.IsLeaf))
             }
         }
     }

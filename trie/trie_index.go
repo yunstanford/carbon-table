@@ -26,6 +26,11 @@ func NewTrieIndex(name string, sep rune) *TrieIndex {
     }
 }
 
+// GetRoot
+func (trieIndex *TrieIndex) GetRoot() *Node {
+    return trieIndex.root
+}
+
 // Insert
 func (trieIndex *TrieIndex) Insert(metric string) {
     // split

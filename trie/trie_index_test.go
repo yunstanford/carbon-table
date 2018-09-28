@@ -147,46 +147,46 @@ func TestTrieIndexExpandPattern(t *testing.T) {
         {
             "zillow.seattle.velocity",
             []*QueryResult{
-                &QueryResult{query: "zillow.seattle.velocity", isLeaf: true},
+                &QueryResult{Query: "zillow.seattle.velocity", IsLeaf: true},
             },
         },
         {
             "zillow.sf1.*",
             []*QueryResult{
-                &QueryResult{query: "zillow.sf1.data", isLeaf: true},
-                &QueryResult{query: "zillow.sf1.pa", isLeaf: true},
+                &QueryResult{Query: "zillow.sf1.data", IsLeaf: true},
+                &QueryResult{Query: "zillow.sf1.pa", IsLeaf: true},
             },
         },
         {
             "zillow.*.data",
             []*QueryResult{
-                &QueryResult{query: "zillow.nyc.data", isLeaf: true},
-                &QueryResult{query: "zillow.seattle.data", isLeaf: true},
-                &QueryResult{query: "zillow.sf1.data", isLeaf: true},
-                &QueryResult{query: "zillow.sf2.data", isLeaf: true},
+                &QueryResult{Query: "zillow.nyc.data", IsLeaf: true},
+                &QueryResult{Query: "zillow.seattle.data", IsLeaf: true},
+                &QueryResult{Query: "zillow.sf1.data", IsLeaf: true},
+                &QueryResult{Query: "zillow.sf2.data", IsLeaf: true},
             },
         },
         {
             "zillow.sf[0-9].data",
             []*QueryResult{
-                &QueryResult{query: "zillow.sf1.data", isLeaf: true},
-                &QueryResult{query: "zillow.sf2.data", isLeaf: true},
+                &QueryResult{Query: "zillow.sf1.data", IsLeaf: true},
+                &QueryResult{Query: "zillow.sf2.data", IsLeaf: true},
             },
         },
         {
             "zillow.seattle.velo[1-9]city",
             []*QueryResult{
-                &QueryResult{query: "zillow.seattle.velo1city", isLeaf: true},
-                &QueryResult{query: "zillow.seattle.velo2city", isLeaf: true},
+                &QueryResult{Query: "zillow.seattle.velo1city", IsLeaf: true},
+                &QueryResult{Query: "zillow.seattle.velo2city", IsLeaf: true},
             },
         },
         {
             "zillow.*.rentals{Revenue,Consumer}",
             []*QueryResult{
-                &QueryResult{query: "zillow.nyc.rentalsConsumer", isLeaf: true},
-                &QueryResult{query: "zillow.nyc.rentalsRevenue", isLeaf: true},
-                &QueryResult{query: "zillow.seattle.rentalsConsumer", isLeaf: true},
-                &QueryResult{query: "zillow.seattle.rentalsRevenue", isLeaf: true},
+                &QueryResult{Query: "zillow.nyc.rentalsConsumer", IsLeaf: true},
+                &QueryResult{Query: "zillow.nyc.rentalsRevenue", IsLeaf: true},
+                &QueryResult{Query: "zillow.seattle.rentalsConsumer", IsLeaf: true},
+                &QueryResult{Query: "zillow.seattle.rentalsRevenue", IsLeaf: true},
             },
         },
     }
@@ -195,7 +195,7 @@ func TestTrieIndexExpandPattern(t *testing.T) {
     for _, testCase := range testCases {
         queryResults := index.ExpandPattern(testCase.pattern)
         sort.Slice(queryResults, func(i, j int) bool {
-          return queryResults[i].query < queryResults[j].query
+          return queryResults[i].Query < queryResults[j].Query
         })
         if !reflect.DeepEqual(queryResults, testCase.expectedQueries) {
             t.Errorf("failed with pattern %s", testCase.pattern)

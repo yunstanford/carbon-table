@@ -38,3 +38,13 @@ func (t *Table) ExpandQuery(query string) []string {
 func (t *Table) ExpandPattern(pattern string) []*trie.QueryResult {
     return t.index.ExpandPattern(pattern)
 }
+
+// GetIndex
+func (t *Table) GetIndex() *trie.TrieIndex {
+    return t.index
+}
+
+// GetTtl
+func (t *Table) GetTtl() int {
+    return t.ttl
+}
