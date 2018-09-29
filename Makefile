@@ -16,3 +16,6 @@ $(NAME):
 test:
 	$(GO) test $(MODULE)/trie
 	$(GO) test $(MODULE)/table
+
+build:
+	$(GO) build -o build/carbon-table cmd/carbon-table/main.go
