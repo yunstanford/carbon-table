@@ -14,6 +14,7 @@ $(NAME):
 	$(GO) build $(MODULE)
 
 test:
+	$(GO) test $(MODULE)/api
 	$(GO) test $(MODULE)/trie
 	$(GO) test $(MODULE)/table
 
