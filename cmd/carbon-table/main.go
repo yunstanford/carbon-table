@@ -11,6 +11,8 @@ import (
     "github.com/yunstanford/carbon-table/receiver"
 )
 
+const Version = "0.1.0"
+
 func init() {
 
 }
