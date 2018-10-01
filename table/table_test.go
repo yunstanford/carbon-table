@@ -184,6 +184,7 @@ func TestExpandPattern(t *testing.T) {
 func TestIndexRefresh(t *testing.T) {
     tbl := NewTable(&cfg.TableConfig{Ttl: 3600})
     tbl.mirroringPeriod = 1
+    tbl.Insert("carbon.cache.a")
 
     IndexRefresh(tbl)
 
@@ -193,5 +194,11 @@ func TestIndexRefresh(t *testing.T) {
 
     if tbl.mirroring != false {
         t.Errorf("tbl.mirroring == true")
+    }
+
+    queries := tbl.ExpandQuery("carbon.*.a")
+
+    if len(queries) != 0 {
+        t.Errorf("queries is not empty!")
     }
 }

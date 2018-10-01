@@ -80,15 +80,15 @@ func (t *Table) GetTtl() int {
 
 // IndexRefresh
 func IndexRefresh(tbl *Table) {
-        tbl.mirroring = true
-        tbl.new_index = trie.NewTrieIndex(INDEX_NAME, '.')
-        waiter := time.NewTimer(time.Second * time.Duration(tbl.mirroringPeriod))
+    tbl.mirroring = true
+    tbl.new_index = trie.NewTrieIndex(INDEX_NAME, '.')
+    waiter := time.NewTimer(time.Second * time.Duration(tbl.mirroringPeriod))
 
-        // Cummulate new data
-        <- waiter.C
+    // Cummulate new data
+    <- waiter.C
 
-        // Swap and Reset
-        tbl.index = tbl.new_index
-        tbl.new_index = nil
-        tbl.mirroring = false
+    // Swap and Reset
+    tbl.index = tbl.new_index
+    tbl.new_index = nil
+    tbl.mirroring = false
 }
