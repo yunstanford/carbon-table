@@ -179,3 +179,19 @@ func TestExpandPattern(t *testing.T) {
         }
     }
 }
+
+// Test IndexRefresh
+func TestIndexRefresh(t *testing.T) {
+    tbl := NewTable(&cfg.TableConfig{Ttl: 3600})
+    tbl.mirroringPeriod = 1
+
+    IndexRefresh(tbl)
+
+    if tbl.new_index != nil {
+        t.Errorf("new_index is not nil")
+    }
+
+    if tbl.mirroring != false {
+        t.Errorf("tbl.mirroring == true")
+    }
+}
