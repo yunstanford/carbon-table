@@ -16,7 +16,7 @@ type Table struct {
     ttl     int
 
     // for ttl
-    new_index        *trie.TrieIndex
+    newIndex        *trie.TrieIndex
     mirroring        bool
     mirroringPeriod  int
 }
@@ -28,9 +28,9 @@ func NewTable(config *cfg.TableConfig) *Table {
         index: root,
         ttl:   config.Ttl,
         // for ttl
-        new_index: nil,
+        newIndex: nil,
         mirroring: false,
-        mirroringPeriod: 120,
+        mirroringPeriod: config.Period,
     }
 
     // Setup tick
@@ -81,14 +81,14 @@ func (t *Table) GetTtl() int {
 // IndexRefresh
 func IndexRefresh(tbl *Table) {
     tbl.mirroring = true
-    tbl.new_index = trie.NewTrieIndex(INDEX_NAME, '.')
+    tbl.newIndex = trie.NewTrieIndex(INDEX_NAME, '.')
     waiter := time.NewTimer(time.Second * time.Duration(tbl.mirroringPeriod))
 
     // Cummulate new data
     <- waiter.C
 
     // Swap and Reset
-    tbl.index = tbl.new_index
-    tbl.new_index = nil
+    tbl.index = tbl.newIndex
+    tbl.newIndex = nil
     tbl.mirroring = false
 }

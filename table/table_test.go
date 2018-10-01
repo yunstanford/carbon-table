@@ -10,7 +10,7 @@ import (
 
 // Test NewTrieIndex
 func TestNewTable(t *testing.T) {
-    tbl := NewTable(&cfg.TableConfig{Ttl: 3600})
+    tbl := NewTable(&cfg.TableConfig{Ttl: 3600, Period: 120})
     index := tbl.GetIndex()
     root := index.GetRoot()
 
@@ -27,7 +27,7 @@ func TestNewTable(t *testing.T) {
 
 // Test Insert
 func TestInsert(t *testing.T) {
-    tbl := NewTable(&cfg.TableConfig{Ttl: 3600})
+    tbl := NewTable(&cfg.TableConfig{Ttl: 3600, Period: 120})
     tbl.Insert("carbon.cache.a")
     index := tbl.GetIndex()
     root := index.GetRoot()
@@ -51,7 +51,7 @@ func TestInsert(t *testing.T) {
 
 // Test ExpandQuery
 func TestExpandQuery(t *testing.T) {
-    tbl := NewTable(&cfg.TableConfig{Ttl: 3600})
+    tbl := NewTable(&cfg.TableConfig{Ttl: 3600, Period: 120})
 
     tbl.Insert("zillow.seattle.velocity")
     tbl.Insert("zillow.seattle.velo1city")
@@ -96,7 +96,7 @@ func TestExpandQuery(t *testing.T) {
 
 // Test ExpandPattern
 func TestExpandPattern(t *testing.T) {
-    tbl := NewTable(&cfg.TableConfig{Ttl: 3600})
+    tbl := NewTable(&cfg.TableConfig{Ttl: 3600, Period: 120})
 
     tbl.Insert("zillow.seattle.velocity")
     tbl.Insert("zillow.seattle.velo1city")
@@ -182,14 +182,14 @@ func TestExpandPattern(t *testing.T) {
 
 // Test IndexRefresh
 func TestIndexRefresh(t *testing.T) {
-    tbl := NewTable(&cfg.TableConfig{Ttl: 3600})
+    tbl := NewTable(&cfg.TableConfig{Ttl: 3600, Period: 120})
     tbl.mirroringPeriod = 1
     tbl.Insert("carbon.cache.a")
 
     IndexRefresh(tbl)
 
-    if tbl.new_index != nil {
-        t.Errorf("new_index is not nil")
+    if tbl.newIndex != nil {
+        t.Errorf("newIndex is not nil")
     }
 
     if tbl.mirroring != false {
