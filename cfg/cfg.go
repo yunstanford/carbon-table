@@ -8,7 +8,8 @@ import (
 // Table Config
 // ttl: Number of seconds to rebuild trie according to current traffic. This is designed for dropping pretty old metrics.
 type TableConfig struct {
-    Ttl  int
+    Ttl     int
+    Period  int  // Period for mirroring traffic
 }
 
 // api Config
@@ -36,6 +37,7 @@ func NewConfig() *Config {
     cfg := &Config{
         Table: &TableConfig{
             Ttl: 3600 * 12, // 12 hours
+            Period: 60 * 2, // 2 mins
         },
         Api: &ApiConfig{
             ApiAddr: "127.0.0.1:8080",
