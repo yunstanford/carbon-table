@@ -10,3 +10,4 @@ carbon-table
 
 
 Carbon-Table backends with Gin and Trie Tree that supports fast resolving Graphite-Like wildcards query.
+This is designed to put behind ``carbon-relay-ng`` and regsiter ``sendAllMatch`` route.
