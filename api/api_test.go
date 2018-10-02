@@ -1,7 +1,9 @@
 package api
 
 import (
+    "fmt"
     "testing"
+    "time"
     "encoding/json"
     "net/http"
     "net/http/httptest"
@@ -12,7 +14,6 @@ import (
     "github.com/yunstanford/carbon-table/trie"
 )
 
-
 // Test Api Full
 func TestApiFull(t *testing.T) {
     // Setup
@@ -20,6 +21,7 @@ func TestApiFull(t *testing.T) {
     tbl := table.NewTable(config.Table)
     logger, _ := zap.NewProduction()
     a := NewApi(config.Api, tbl, logger)
+    now := tbl.IndexVersion
 
     tbl.Insert("carbon.cache.a")
 
@@ -30,6 +32,16 @@ func TestApiFull(t *testing.T) {
 
     assert.Equal(t, 200, w.Code)
     assert.Equal(t, "{\"message\":\"pong\"}", w.Body.String())
+
+    // Test Version
+    w = httptest.NewRecorder()
+    req, _ = http.NewRequest("GET", "/version", nil)
+    a.router.ServeHTTP(w, req)
+
+    version := fmt.Sprintf("{\"version\":\"%s\"}", now.Format(time.RFC3339))
+
+    assert.Equal(t, 200, w.Code)
+    assert.Equal(t, version, w.Body.String())
 
     // Test ExpandQuery
     w = httptest.NewRecorder()

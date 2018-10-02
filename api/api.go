@@ -29,6 +29,15 @@ func AddHealthPing(a *Api) {
     })
 }
 
+// version api
+func AddVersion(a *Api) {
+    a.router.GET("/version", func(c *gin.Context) {
+        c.JSON(200, gin.H{
+            "version": a.table.IndexVersion.Format(time.RFC3339),
+        })
+    })
+}
+
 // metric expand query handler
 func AddExpandQuery(a *Api) {
     a.router.GET("/metric/query/:query/", func(c *gin.Context) {
@@ -54,6 +63,7 @@ func AddRoutes(a *Api) {
     AddHealthPing(a)
     AddExpandQuery(a)
     AddExpandPattern(a)
+    AddVersion(a)
 
     // Add more routes here...
 }

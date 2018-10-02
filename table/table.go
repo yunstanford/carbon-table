@@ -16,9 +16,12 @@ type Table struct {
     ttl     int
 
     // for ttl
-    newIndex        *trie.TrieIndex
+    newIndex         *trie.TrieIndex
     mirroring        bool
     mirroringPeriod  int
+
+    // Index Version
+    IndexVersion     time.Time
 }
 
 // NewTable
@@ -31,6 +34,8 @@ func NewTable(config *cfg.TableConfig) *Table {
         newIndex: nil,
         mirroring: false,
         mirroringPeriod: config.Period,
+        // IndexVersion
+        IndexVersion: time.Now(),
     }
 
     // Setup tick
@@ -80,6 +85,7 @@ func (t *Table) GetTtl() int {
 
 // IndexRefresh
 func IndexRefresh(tbl *Table) {
+    // Setup new index
     tbl.mirroring = true
     tbl.newIndex = trie.NewTrieIndex(INDEX_NAME, '.')
     waiter := time.NewTimer(time.Second * time.Duration(tbl.mirroringPeriod))
@@ -89,6 +95,7 @@ func IndexRefresh(tbl *Table) {
 
     // Swap and Reset
     tbl.index = tbl.newIndex
+    tbl.IndexVersion = time.Now()
     tbl.newIndex = nil
     tbl.mirroring = false
 }
