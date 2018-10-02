@@ -13,5 +13,7 @@ Carbon-Table backends with Gin and Trie Tree that supports fast resolving Graphi
 This is designed to put behind ``carbon-relay-ng`` and regsiter ``sendAllMatch`` route. That way, Graphite-Web
 doesn't need to send requests to all Carbon-Cache Instances for wildcard queries.
 
-.. image:: https://raw.githubusercontent.com/yunstanford/carbon-table/master/example/arch.png
-   :align: middle
+
+.. figure:: ./example/arch.png
+   :align: center
+   :alt: arch.png
