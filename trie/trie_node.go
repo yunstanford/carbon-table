@@ -45,7 +45,6 @@ func NewNode(isLeaf bool, name string, sep rune) *Node {
     }
 }
 
-
 // Get - get a child node.
 func (n *Node) Get(childName string) *Node {
     if child, ok := n.children[childName]; ok {
