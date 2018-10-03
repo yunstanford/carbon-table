@@ -17,3 +17,32 @@ doesn't need to send requests to all Carbon-Cache Instances for wildcard queries
 .. figure:: ./example/arch.png
    :align: center
    :alt: arch.png
+
+
+-------
+Install
+-------
+
+.. code::
+
+    curl https://raw.githubusercontent.com/yunstanford/carbon-table/master/get-carbon-table.sh | sh
+
+
+----------
+Quickstart
+----------
+
+.. code::
+
+    .. http:8080, tcp:3000
+    ./carbon-table
+
+    .. send metric data
+    echo "test.foo 7 `date +%s`" | nc localhost 3000
+    echo "test.bar 7 `date +%s`" | nc localhost 3000
+
+    .. expand
+    curl http://localhost:8080/metric/pattern/test.*/
+
+    .. expand
+    curl http://localhost:8080/metric/query/test.*/
