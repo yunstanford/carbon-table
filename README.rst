@@ -9,7 +9,7 @@ carbon-table
     :target: https://codecov.io/gh/yunstanford/carbon-table
 
 
-Carbon-Table backends with Gin and Trie Tree that supports fast resolving Graphite-Like wildcards query.
+Carbon-Table backends with Gin, Trie Tree and concurrent-map that supports fast resolving Graphite-Like wildcards query.
 This is designed to put behind ``carbon-relay-ng`` and regsiter ``sendAllMatch`` route. That way, Graphite-Web
 doesn't need to send requests to all Carbon-Cache Instances for wildcard queries.
 
