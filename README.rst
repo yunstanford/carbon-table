@@ -34,15 +34,19 @@ Quickstart
 
 .. code::
 
-    .. http:8080, tcp:3000
+    # http:8080, tcp:3000
     ./carbon-table
 
-    .. send metric data
+    # send metric data
     echo "test.foo 7 `date +%s`" | nc localhost 3000
     echo "test.bar 7 `date +%s`" | nc localhost 3000
 
-    .. expand
+    # expand
     curl http://localhost:8080/metric/pattern/test.*/
 
-    .. expand
+    [{"Query":"test.bar","IsLeaf":true},{"Query":"test.foo","IsLeaf":true}]
+
+    # expand
     curl http://localhost:8080/metric/query/test.*/
+
+    ["test.bar","test.foo"]
