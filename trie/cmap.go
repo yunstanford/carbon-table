@@ -1,4 +1,4 @@
-package cmap
+package trie
 
 //////////////////////////////////////////////////////////
 // Copyright: https://github.com/orcaman/concurrent-map //
@@ -6,7 +6,6 @@ package cmap
 //////////////////////////////////////////////////////////
 
 import (
-	"encoding/json"
 	"sync"
 )
 
@@ -18,15 +17,15 @@ type ConcurrentMap []*ConcurrentMapShared
 
 // A "thread" safe string to anything map.
 type ConcurrentMapShared struct {
-	items        map[string]interface{}
+	items        map[string]*Node
 	sync.RWMutex // Read Write mutex, guards access to internal map.
 }
 
 // Creates a new concurrent map.
-func New() ConcurrentMap {
+func NewConcurrentMap() ConcurrentMap {
 	m := make(ConcurrentMap, SHARD_COUNT)
 	for i := 0; i < SHARD_COUNT; i++ {
-		m[i] = &ConcurrentMapShared{items: make(map[string]interface{})}
+		m[i] = &ConcurrentMapShared{items: make(map[string]*Node)}
 	}
 	return m
 }
@@ -36,7 +35,7 @@ func (m ConcurrentMap) GetShard(key string) *ConcurrentMapShared {
 	return m[uint(fnv32(key))%uint(SHARD_COUNT)]
 }
 
-func (m ConcurrentMap) MSet(data map[string]interface{}) {
+func (m ConcurrentMap) MSet(data map[string]*Node) {
 	for key, value := range data {
 		shard := m.GetShard(key)
 		shard.Lock()
@@ -46,7 +45,7 @@ func (m ConcurrentMap) MSet(data map[string]interface{}) {
 }
 
 // Sets the given value under the specified key.
-func (m ConcurrentMap) Set(key string, value interface{}) {
+func (m ConcurrentMap) Set(key string, value *Node) {
 	// Get map shard.
 	shard := m.GetShard(key)
 	shard.Lock()
@@ -58,10 +57,10 @@ func (m ConcurrentMap) Set(key string, value interface{}) {
 // It is called while lock is held, therefore it MUST NOT
 // try to access other keys in same map, as it can lead to deadlock since
 // Go sync.RWLock is not reentrant
-type UpsertCb func(exist bool, valueInMap interface{}, newValue interface{}) interface{}
+type UpsertCb func(exist bool, valueInMap *Node, newValue *Node) *Node
 
 // Insert or Update - updates existing element or inserts a new one using UpsertCb
-func (m ConcurrentMap) Upsert(key string, value interface{}, cb UpsertCb) (res interface{}) {
+func (m ConcurrentMap) Upsert(key string, value *Node, cb UpsertCb) (res *Node) {
 	shard := m.GetShard(key)
 	shard.Lock()
 	v, ok := shard.items[key]
@@ -72,7 +71,7 @@ func (m ConcurrentMap) Upsert(key string, value interface{}, cb UpsertCb) (res i
 }
 
 // Sets the given value under the specified key if no value was associated with it.
-func (m ConcurrentMap) SetIfAbsent(key string, value interface{}) bool {
+func (m ConcurrentMap) SetIfAbsent(key string, value *Node) bool {
 	// Get map shard.
 	shard := m.GetShard(key)
 	shard.Lock()
@@ -85,7 +84,7 @@ func (m ConcurrentMap) SetIfAbsent(key string, value interface{}) bool {
 }
 
 // Retrieves an element from map under given key.
-func (m ConcurrentMap) Get(key string) (interface{}, bool) {
+func (m ConcurrentMap) Get(key string) (*Node, bool) {
 	// Get shard
 	shard := m.GetShard(key)
 	shard.RLock()
@@ -127,28 +126,8 @@ func (m ConcurrentMap) Remove(key string) {
 	shard.Unlock()
 }
 
-// RemoveCb is a callback executed in a map.RemoveCb() call, while Lock is held
-// If returns true, the element will be removed from the map
-type RemoveCb func(key string, v interface{}, exists bool) bool
-
-// RemoveCb locks the shard containing the key, retrieves its current value and calls the callback with those params
-// If callback returns true and element exists, it will remove it from the map
-// Returns the value returned by the callback (even if element was not present in the map)
-func (m ConcurrentMap) RemoveCb(key string, cb RemoveCb) bool {
-	// Try to get shard.
-	shard := m.GetShard(key)
-	shard.Lock()
-	v, ok := shard.items[key]
-	remove := cb(key, v, ok)
-	if remove && ok {
-		delete(shard.items, key)
-	}
-	shard.Unlock()
-	return remove
-}
-
 // Removes an element from the map and returns it
-func (m ConcurrentMap) Pop(key string) (v interface{}, exists bool) {
+func (m ConcurrentMap) Pop(key string) (v *Node, exists bool) {
 	// Try to get shard.
 	shard := m.GetShard(key)
 	shard.Lock()
@@ -166,7 +145,7 @@ func (m ConcurrentMap) IsEmpty() bool {
 // Used by the Iter & IterBuffered functions to wrap two variables together over a channel,
 type Tuple struct {
 	Key string
-	Val interface{}
+	Val *Node
 }
 
 // Returns an iterator which could be used in a for range loop.
@@ -233,9 +212,9 @@ func fanIn(chans []chan Tuple, out chan Tuple) {
 	close(out)
 }
 
-// Returns all items as map[string]interface{}
-func (m ConcurrentMap) Items() map[string]interface{} {
-	tmp := make(map[string]interface{})
+// Returns all items as map[string]*Node
+func (m ConcurrentMap) Items() map[string]*Node {
+	tmp := make(map[string]*Node)
 
 	// Insert items to temporary map.
 	for item := range m.IterBuffered() {
@@ -249,7 +228,7 @@ func (m ConcurrentMap) Items() map[string]interface{} {
 // maps. RLock is held for all calls for a given shard
 // therefore callback sess consistent view of a shard,
 // but not across the shards
-type IterCb func(key string, v interface{})
+type IterCb func(key string, v *Node)
 
 // Callback based iterator, cheapest way to read
 // all elements in a map.
@@ -293,18 +272,6 @@ func (m ConcurrentMap) Keys() []string {
 		keys = append(keys, k)
 	}
 	return keys
-}
-
-//Reviles ConcurrentMap "private" variables to json marshal.
-func (m ConcurrentMap) MarshalJSON() ([]byte, error) {
-	// Create a temporary map, which will hold all item spread across shards.
-	tmp := make(map[string]interface{})
-
-	// Insert items to temporary map.
-	for item := range m.IterBuffered() {
-		tmp[item.Key] = item.Val
-	}
-	return json.Marshal(tmp)
 }
 
 func fnv32(key string) uint32 {

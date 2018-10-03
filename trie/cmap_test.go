@@ -1,19 +1,15 @@
-package cmap
+package trie
 
 import (
-	"encoding/json"
 	"hash/fnv"
 	"sort"
 	"strconv"
 	"testing"
 )
 
-type Animal struct {
-	name string
-}
 
 func TestMapCreation(t *testing.T) {
-	m := New()
+	m := NewConcurrentMap()
 	if m == nil {
 		t.Error("map is null.")
 	}
@@ -24,9 +20,9 @@ func TestMapCreation(t *testing.T) {
 }
 
 func TestInsert(t *testing.T) {
-	m := New()
-	elephant := Animal{"elephant"}
-	monkey := Animal{"monkey"}
+	m := NewConcurrentMap()
+	elephant := NewNode(true, "elephant", '.')
+	monkey := NewNode(true, "monkey", '.')
 
 	m.Set("elephant", elephant)
 	m.Set("monkey", monkey)
@@ -37,9 +33,9 @@ func TestInsert(t *testing.T) {
 }
 
 func TestInsertAbsent(t *testing.T) {
-	m := New()
-	elephant := Animal{"elephant"}
-	monkey := Animal{"monkey"}
+	m := NewConcurrentMap()
+	elephant := NewNode(true, "elephant", '.')
+	monkey := NewNode(true, "monkey", '.')
 
 	m.SetIfAbsent("elephant", elephant)
 	if ok := m.SetIfAbsent("elephant", monkey); ok {
@@ -48,7 +44,7 @@ func TestInsertAbsent(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
-	m := New()
+	m := NewConcurrentMap()
 
 	// Get a missing element.
 	val, ok := m.Get("Money")
@@ -61,13 +57,12 @@ func TestGet(t *testing.T) {
 		t.Error("Missing values should return as null.")
 	}
 
-	elephant := Animal{"elephant"}
+	elephant := NewNode(true, "elephant", '.')
 	m.Set("elephant", elephant)
 
 	// Retrieve inserted element.
 
-	tmp, ok := m.Get("elephant")
-	elephant = tmp.(Animal) // Type assertion.
+	elephant, ok = m.Get("elephant")
 
 	if ok == false {
 		t.Error("ok should be true for item stored within the map.")
@@ -83,14 +78,14 @@ func TestGet(t *testing.T) {
 }
 
 func TestHas(t *testing.T) {
-	m := New()
+	m := NewConcurrentMap()
 
 	// Get a missing element.
 	if m.Has("Money") == true {
 		t.Error("element shouldn't exists")
 	}
 
-	elephant := Animal{"elephant"}
+	elephant := NewNode(true, "elephant", '.')
 	m.Set("elephant", elephant)
 
 	if m.Has("elephant") == false {
@@ -99,9 +94,9 @@ func TestHas(t *testing.T) {
 }
 
 func TestRemove(t *testing.T) {
-	m := New()
+	m := NewConcurrentMap()
 
-	monkey := Animal{"monkey"}
+	monkey := NewNode(true, "monkey", '.')
 	m.Set("monkey", monkey)
 
 	m.Remove("monkey")
@@ -124,101 +119,10 @@ func TestRemove(t *testing.T) {
 	m.Remove("noone")
 }
 
-func TestRemoveCb(t *testing.T) {
-	m := New()
-
-	monkey := Animal{"monkey"}
-	m.Set("monkey", monkey)
-	elephant := Animal{"elephant"}
-	m.Set("elephant", elephant)
-
-	var (
-		mapKey   string
-		mapVal   interface{}
-		wasFound bool
-	)
-	cb := func(key string, val interface{}, exists bool) bool {
-		mapKey = key
-		mapVal = val
-		wasFound = exists
-
-		if animal, ok := val.(Animal); ok {
-			return animal.name == "monkey"
-		}
-		return false
-	}
-
-	// Monkey should be removed
-	result := m.RemoveCb("monkey", cb)
-	if !result {
-		t.Errorf("Result was not true")
-	}
-
-	if mapKey != "monkey" {
-		t.Error("Wrong key was provided to the callback")
-	}
-
-	if mapVal != monkey {
-		t.Errorf("Wrong value was provided to the value")
-	}
-
-	if !wasFound {
-		t.Errorf("Key was not found")
-	}
-
-	if m.Has("monkey") {
-		t.Errorf("Key was not removed")
-	}
-
-	// Elephant should not be removed
-	result = m.RemoveCb("elephant", cb)
-	if result {
-		t.Errorf("Result was true")
-	}
-
-	if mapKey != "elephant" {
-		t.Error("Wrong key was provided to the callback")
-	}
-
-	if mapVal != elephant {
-		t.Errorf("Wrong value was provided to the value")
-	}
-
-	if !wasFound {
-		t.Errorf("Key was not found")
-	}
-
-	if !m.Has("elephant") {
-		t.Errorf("Key was removed")
-	}
-
-	// Unset key should remain unset
-	result = m.RemoveCb("horse", cb)
-	if result {
-		t.Errorf("Result was true")
-	}
-
-	if mapKey != "horse" {
-		t.Error("Wrong key was provided to the callback")
-	}
-
-	if mapVal != nil {
-		t.Errorf("Wrong value was provided to the value")
-	}
-
-	if wasFound {
-		t.Errorf("Key was found")
-	}
-
-	if m.Has("horse") {
-		t.Errorf("Key was created")
-	}
-}
-
 func TestPop(t *testing.T) {
-	m := New()
+	m := NewConcurrentMap()
 
-	monkey := Animal{"monkey"}
+	monkey := NewNode(true, "monkey", '.')
 	m.Set("monkey", monkey)
 
 	v, exists := m.Pop("monkey")
@@ -227,16 +131,16 @@ func TestPop(t *testing.T) {
 		t.Error("Pop didn't find a monkey.")
 	}
 
-	m1, ok := v.(Animal)
+	m1 := v
 
-	if !ok || m1 != monkey {
+	if m1 != monkey {
 		t.Error("Pop found something else, but monkey.")
 	}
 
 	v2, exists2 := m.Pop("monkey")
-	m1, ok = v2.(Animal)
+	m1 = v2
 
-	if exists2 || ok || m1 == monkey {
+	if exists2 || m1 == monkey {
 		t.Error("Pop keeps finding monkey")
 	}
 
@@ -256,9 +160,9 @@ func TestPop(t *testing.T) {
 }
 
 func TestCount(t *testing.T) {
-	m := New()
+	m := NewConcurrentMap()
 	for i := 0; i < 100; i++ {
-		m.Set(strconv.Itoa(i), Animal{strconv.Itoa(i)})
+		m.Set(strconv.Itoa(i), NewNode(true, strconv.Itoa(i), '.'))
 	}
 
 	if m.Count() != 100 {
@@ -267,13 +171,13 @@ func TestCount(t *testing.T) {
 }
 
 func TestIsEmpty(t *testing.T) {
-	m := New()
+	m := NewConcurrentMap()
 
 	if m.IsEmpty() == false {
 		t.Error("new map should be empty")
 	}
 
-	m.Set("elephant", Animal{"elephant"})
+	m.Set("elephant", NewNode(true, "elephant", '.'))
 
 	if m.IsEmpty() != false {
 		t.Error("map shouldn't be empty.")
@@ -281,11 +185,11 @@ func TestIsEmpty(t *testing.T) {
 }
 
 func TestIterator(t *testing.T) {
-	m := New()
+	m := NewConcurrentMap()
 
 	// Insert 100 elements.
 	for i := 0; i < 100; i++ {
-		m.Set(strconv.Itoa(i), Animal{strconv.Itoa(i)})
+		m.Set(strconv.Itoa(i), NewNode(true, strconv.Itoa(i), '.'))
 	}
 
 	counter := 0
@@ -305,11 +209,11 @@ func TestIterator(t *testing.T) {
 }
 
 func TestBufferedIterator(t *testing.T) {
-	m := New()
+	m := NewConcurrentMap()
 
 	// Insert 100 elements.
 	for i := 0; i < 100; i++ {
-		m.Set(strconv.Itoa(i), Animal{strconv.Itoa(i)})
+		m.Set(strconv.Itoa(i), NewNode(true, strconv.Itoa(i), '.'))
 	}
 
 	counter := 0
@@ -329,21 +233,16 @@ func TestBufferedIterator(t *testing.T) {
 }
 
 func TestIterCb(t *testing.T) {
-	m := New()
+	m := NewConcurrentMap()
 
 	// Insert 100 elements.
 	for i := 0; i < 100; i++ {
-		m.Set(strconv.Itoa(i), Animal{strconv.Itoa(i)})
+		m.Set(strconv.Itoa(i), NewNode(true, strconv.Itoa(i), '.'))
 	}
 
 	counter := 0
 	// Iterate over elements.
-	m.IterCb(func(key string, v interface{}) {
-		_, ok := v.(Animal)
-		if !ok {
-			t.Error("Expecting an animal object")
-		}
-
+	m.IterCb(func(key string, v *Node) {
 		counter++
 	})
 	if counter != 100 {
@@ -352,11 +251,11 @@ func TestIterCb(t *testing.T) {
 }
 
 func TestItems(t *testing.T) {
-	m := New()
+	m := NewConcurrentMap()
 
 	// Insert 100 elements.
 	for i := 0; i < 100; i++ {
-		m.Set(strconv.Itoa(i), Animal{strconv.Itoa(i)})
+		m.Set(strconv.Itoa(i), NewNode(true, strconv.Itoa(i), '.'))
 	}
 
 	items := m.Items()
@@ -367,35 +266,35 @@ func TestItems(t *testing.T) {
 }
 
 func TestConcurrent(t *testing.T) {
-	m := New()
-	ch := make(chan int)
+	m := NewConcurrentMap()
+	ch := make(chan *Node)
 	const iterations = 1000
-	var a [iterations]int
+	var a [iterations]*Node
 
 	// Using go routines insert 1000 ints into our map.
 	go func() {
 		for i := 0; i < iterations/2; i++ {
 			// Add item to map.
-			m.Set(strconv.Itoa(i), i)
+			m.Set(strconv.Itoa(i), NewNode(true, strconv.Itoa(i), '.'))
 
 			// Retrieve item from map.
 			val, _ := m.Get(strconv.Itoa(i))
 
 			// Write to channel inserted value.
-			ch <- val.(int)
+			ch <- val
 		} // Call go routine with current index.
 	}()
 
 	go func() {
 		for i := iterations / 2; i < iterations; i++ {
 			// Add item to map.
-			m.Set(strconv.Itoa(i), i)
+			m.Set(strconv.Itoa(i), NewNode(true, strconv.Itoa(i), '.'))
 
 			// Retrieve item from map.
 			val, _ := m.Get(strconv.Itoa(i))
 
 			// Write to channel inserted value.
-			ch <- val.(int)
+			ch <- val
 		} // Call go routine with current index.
 	}()
 
@@ -410,7 +309,11 @@ func TestConcurrent(t *testing.T) {
 	}
 
 	// Sorts array, will make is simpler to verify all inserted values we're returned.
-	sort.Ints(a[0:iterations])
+	sort.Slice(a[0:iterations], func(i, j int) bool {
+			tmp1, _ := strconv.ParseInt(a[i].name, 10, 64)
+			tmp2, _ := strconv.ParseInt(a[j].name, 10, 64)
+        	return  tmp1 < tmp2
+        })
 
 	// Make sure map contains 1000 elements.
 	if m.Count() != iterations {
@@ -419,38 +322,18 @@ func TestConcurrent(t *testing.T) {
 
 	// Make sure all inserted values we're fetched from map.
 	for i := 0; i < iterations; i++ {
-		if i != a[i] {
-			t.Error("missing value", i)
+		if strconv.Itoa(i) != a[i].name {
+			t.Error("missing value", i, a[i].name)
 		}
 	}
 }
 
-func TestJsonMarshal(t *testing.T) {
-	SHARD_COUNT = 2
-	defer func() {
-		SHARD_COUNT = 32
-	}()
-	expected := "{\"a\":1,\"b\":2}"
-	m := New()
-	m.Set("a", 1)
-	m.Set("b", 2)
-	j, err := json.Marshal(m)
-	if err != nil {
-		t.Error(err)
-	}
-
-	if string(j) != expected {
-		t.Error("json", string(j), "differ from expected", expected)
-		return
-	}
-}
-
 func TestKeys(t *testing.T) {
-	m := New()
+	m := NewConcurrentMap()
 
 	// Insert 100 elements.
 	for i := 0; i < 100; i++ {
-		m.Set(strconv.Itoa(i), Animal{strconv.Itoa(i)})
+		m.Set(strconv.Itoa(i), NewNode(true, strconv.Itoa(i), '.'))
 	}
 
 	keys := m.Keys()
@@ -460,11 +343,11 @@ func TestKeys(t *testing.T) {
 }
 
 func TestMInsert(t *testing.T) {
-	animals := map[string]interface{}{
-		"elephant": Animal{"elephant"},
-		"monkey":   Animal{"monkey"},
+	animals := map[string]*Node{
+		"elephant": NewNode(true, "elephant", '.'),
+		"monkey":   NewNode(true, "monkey", '.'),
 	}
-	m := New()
+	m := NewConcurrentMap()
 	m.MSet(animals)
 
 	if m.Count() != 2 {
@@ -482,66 +365,13 @@ func TestFnv32(t *testing.T) {
 	}
 }
 
-func TestUpsert(t *testing.T) {
-	dolphin := Animal{"dolphin"}
-	whale := Animal{"whale"}
-	tiger := Animal{"tiger"}
-	lion := Animal{"lion"}
-
-	cb := func(exists bool, valueInMap interface{}, newValue interface{}) interface{} {
-		nv := newValue.(Animal)
-		if !exists {
-			return []Animal{nv}
-		}
-		res := valueInMap.([]Animal)
-		return append(res, nv)
-	}
-
-	m := New()
-	m.Set("marine", []Animal{dolphin})
-	m.Upsert("marine", whale, cb)
-	m.Upsert("predator", tiger, cb)
-	m.Upsert("predator", lion, cb)
-
-	if m.Count() != 2 {
-		t.Error("map should contain exactly two elements.")
-	}
-
-	compare := func(a, b []Animal) bool {
-		if a == nil || b == nil {
-			return false
-		}
-
-		if len(a) != len(b) {
-			return false
-		}
-
-		for i, v := range a {
-			if v != b[i] {
-				return false
-			}
-		}
-		return true
-	}
-
-	marineAnimals, ok := m.Get("marine")
-	if !ok || !compare(marineAnimals.([]Animal), []Animal{dolphin, whale}) {
-		t.Error("Set, then Upsert failed")
-	}
-
-	predators, ok := m.Get("predator")
-	if !ok || !compare(predators.([]Animal), []Animal{tiger, lion}) {
-		t.Error("Upsert, then Upsert failed")
-	}
-}
-
 func TestKeysWhenRemoving(t *testing.T) {
-	m := New()
+	m := NewConcurrentMap()
 
 	// Insert 100 elements.
 	Total := 100
 	for i := 0; i < Total; i++ {
-		m.Set(strconv.Itoa(i), Animal{strconv.Itoa(i)})
+		m.Set(strconv.Itoa(i), NewNode(true, strconv.Itoa(i), '.'))
 	}
 
 	// Remove 10 elements concurrently.
@@ -561,11 +391,11 @@ func TestKeysWhenRemoving(t *testing.T) {
 
 //
 func TestUnDrainedIter(t *testing.T) {
-	m := New()
+	m := NewConcurrentMap()
 	// Insert 100 elements.
 	Total := 100
 	for i := 0; i < Total; i++ {
-		m.Set(strconv.Itoa(i), Animal{strconv.Itoa(i)})
+		m.Set(strconv.Itoa(i), NewNode(true, strconv.Itoa(i), '.'))
 	}
 	counter := 0
 	// Iterate over elements.
@@ -582,7 +412,7 @@ func TestUnDrainedIter(t *testing.T) {
 		}
 	}
 	for i := Total; i < 2*Total; i++ {
-		m.Set(strconv.Itoa(i), Animal{strconv.Itoa(i)})
+		m.Set(strconv.Itoa(i), NewNode(true, strconv.Itoa(i), '.'))
 	}
 	for item := range ch {
 		val := item.Val
@@ -613,11 +443,11 @@ func TestUnDrainedIter(t *testing.T) {
 }
 
 func TestUnDrainedIterBuffered(t *testing.T) {
-	m := New()
+	m := NewConcurrentMap()
 	// Insert 100 elements.
 	Total := 100
 	for i := 0; i < Total; i++ {
-		m.Set(strconv.Itoa(i), Animal{strconv.Itoa(i)})
+		m.Set(strconv.Itoa(i), NewNode(true, strconv.Itoa(i), '.'))
 	}
 	counter := 0
 	// Iterate over elements.
@@ -634,7 +464,7 @@ func TestUnDrainedIterBuffered(t *testing.T) {
 		}
 	}
 	for i := Total; i < 2*Total; i++ {
-		m.Set(strconv.Itoa(i), Animal{strconv.Itoa(i)})
+		m.Set(strconv.Itoa(i), NewNode(true, strconv.Itoa(i), '.'))
 	}
 	for item := range ch {
 		val := item.Val

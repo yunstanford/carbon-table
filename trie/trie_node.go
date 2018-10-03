@@ -5,6 +5,7 @@ import (
     "strings"
     "bytes"
     "regexp"
+    // "github.com/yunstanford/carbon-table/cmap"
 )
 
 
@@ -13,10 +14,10 @@ var EXPAND_BRACES_RE = regexp.MustCompile(`.*(\{.*?[^\\]?\})`)
 
 // Node trie tree node container carries name and children.
 type Node struct {
-    isLeaf bool
-    name  string
-    sep    rune
-    children  map[string]*Node
+    isLeaf    bool
+    name      string
+    sep       rune
+    children  ConcurrentMap
 }
 
 // QueryResult, a tuple of query results, (query, isLeaf)
@@ -25,7 +26,6 @@ type QueryResult struct {
     Query  string
     IsLeaf bool
 }
-
 
 // NewQueryResult
 func NewQueryResult(query string, isLeaf bool) *QueryResult {
@@ -41,13 +41,13 @@ func NewNode(isLeaf bool, name string, sep rune) *Node {
         isLeaf: isLeaf,
         name: name,
         sep: sep,
-        children: make(map[string]*Node),
+        children: NewConcurrentMap(),
     }
 }
 
 // Get - get a child node.
 func (n *Node) Get(childName string) *Node {
-    if child, ok := n.children[childName]; ok {
+    if child, ok := n.children.Get(childName); ok {
         return child
     } else {
         return nil
@@ -56,17 +56,17 @@ func (n *Node) Get(childName string) *Node {
 
 // Insert - insert a child node.
 func (n *Node) Insert(childNode *Node) {
-    if child, ok := n.children[childNode.name]; ok {
+    if child, ok := n.children.Get(childNode.name); ok {
         child.isLeaf = child.isLeaf || childNode.isLeaf
     } else {
-        n.children[childNode.name] = childNode
+        n.children.Set(childNode.name, childNode)
     }
 }
 
 // Delete - delete a child_node.
 func (n *Node) Delete(childName string) bool {
-    if _, ok := n.children[childName]; ok {
-        delete(n.children, childName)
+    if _, ok := n.children.Get(childName); ok {
+        n.children.Remove(childName)
         return true
     } else {
         return false
@@ -122,7 +122,8 @@ func (n *Node) GetAllNode(pattern string) []*Node {
     var matches []*Node
     patterns := ExpandBraces(pattern, ",")
 
-    for childName, childNode := range n.children {
+    for child := range n.children.IterBuffered() {
+        childName, childNode := child.Key, child.Val
         for _, p := range patterns {
             matched, err := filepath.Match(p, childName)
             if err != nil {
@@ -199,5 +200,5 @@ func (n *Node) ExpandPattern(pattern string) []*QueryResult{
 
 // Count - return children count
 func (n *Node) Count() int {
-    return len(n.children)
+    return n.children.Count()
 }
